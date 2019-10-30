@@ -11,9 +11,10 @@ import {
     Form,
     FormItem,
     Select,
-    Option
+    Option,
+    Message
 } from 'element-ui'
-
+Vue.prototype.$message = Message
 Vue.use(Button)
 Vue.use(Table)
 Vue.use(TableColumn)

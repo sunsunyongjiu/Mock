@@ -1,8 +1,9 @@
 <template>
-  <el-dialog title="新增接口信息" :visible.sync="show" width="60%" center>
+  <el-dialog title="新增接口信息" :visible.sync="showDialog" width="60%" center>
     <div class="dia_contain">
       <div class="left_contain">
-        <el-input type="textarea" autosize placeholder="请输入返回数据" v-model="form.code"></el-input>
+        <vue-json-editor v-model="form.code" :showBtns="false"></vue-json-editor>
+        <!-- <el-input type="textarea" autosize placeholder="请输入返回数据" v-model="code"></el-input> -->
       </div>
       <div class="right_contain">
         <el-form ref="form" :model="form" label-width="80px">
@@ -32,13 +33,20 @@
 </template>
 
 <script>
+import vueJsonEditor from "vue-json-editor";
 export default {
   name: "",
+  components: {
+    vueJsonEditor
+  },
   data() {
     return {
       showDialog: false,
       form: {
-        code: "{'data':{code:1}}"
+        code: {
+          code: 0,
+          data: []
+        }
       }
     };
   },
@@ -62,6 +70,7 @@ export default {
       this.$emit("cancel");
     },
     submitClick() {
+      console.log(this.code);
       this.$emit("submit", this.form);
     }
   }

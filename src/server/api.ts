@@ -2,9 +2,9 @@ import http from './http'
 
 export const api = {
 
-    getTest: function (paramObj: any) {
+    getList: function (paramObj: any) {
 
-        return http.get('/test', paramObj)
+        return http.get('/getList', paramObj)
 
     },
     save: function (paramObj: any) {

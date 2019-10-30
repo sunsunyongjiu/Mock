@@ -23,6 +23,7 @@
     <section class="mock_section">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column type="selection" width="55"></el-table-column>
+        <el-table-column fixed prop="name" label="接口名称" width="150"></el-table-column>
         <el-table-column fixed prop="method" label="method" width="150"></el-table-column>
         <el-table-column prop="url" label="url"></el-table-column>
         <el-table-column prop="des" label="描述" width="120"></el-table-column>
@@ -47,23 +48,20 @@ export default {
   },
   data() {
     return {
-      tableData: [
-        {
-          method: "GET",
-          url: "/test",
-          des: "自定义get请求"
-        }
-      ],
+      tableData: [],
       activeIndex: "1",
       showDialog: false
     };
   },
   mounted() {
-    this.$api.getTest().then(res => {
-      console.log(res);
-    });
+    this.getList();
   },
   methods: {
+    getList() {
+      this.$api.getList().then(res => {
+        this.tableData = res.data;
+      });
+    },
     handleSelect() {},
     submit() {
       //同步接口信息
@@ -78,9 +76,12 @@ export default {
     dialogSure(data) {
       this.$api.save(data).then(res => {
         this.showDialog = false;
+        if (res.code === 0) {
+          this.getList();
+        } else {
+          this.$message.error(res.message);
+        }
       });
-
-      this.tableData.push(data);
     },
     test() {
       this.$api.test({ name: 1 }).then(res => {
