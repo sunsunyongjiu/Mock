@@ -91,7 +91,7 @@ app.get('/api/', function (req, res) {
 app.post('/save', urlencodedParser, (req, res) => {
     let data = req.body
     getJson().then(list => {
-        if (list.data.filter(item => item.url === data.url)) {
+        if (list.data.filter(item => item.url === data.url).length > 0) {
             res.json({
                 code: 1,
                 message: '该接口已存在'
