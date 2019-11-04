@@ -29,6 +29,28 @@ function writeJson(params) {
         })
     })
 }
+//将保存的数据书写到json文件中
+function editJson(params) {
+    //现将json文件读出来
+    fs.readFile('./build/data.json', function (err, data) {
+        if (err) {
+            return console.error(err);
+        }
+        var person = data.toString(); //将二进制的数据转换为字符串
+        person = JSON.parse(person); //将字符串转换为json对象
+        person.data = params; //将传来的对象push进数组对象中
+        // person.total = person.data.length; //定义一下总条数，为以后的分页打基础
+        // console.log(person.data);
+        var str = JSON.stringify(person); //因为nodejs的写入文件只认识字符串或者二进制数，所以把json对象转换成字符串重新写入json文件中
+        fs.writeFile('./build/data.json', str, function (err) {
+            if (err) {
+                console.error(err);
+            }
+            init()
+            console.log('----------编辑成功-------------');
+        })
+    })
+}
 //读取已有的json
 function getJson(params) {
     //现将json文件读出来
@@ -56,11 +78,12 @@ function init() {
                 })
             } else {
                 app.get(item.url, (req, res) => {
-                    console.log(typeof (item))
                     res.json(item.code)
                 })
             }
         })
+    }).catch(rs => {
+        console.log(rs)
     })
 }
 init()
@@ -101,5 +124,11 @@ app.post('/save', urlencodedParser, (req, res) => {
             res.json('hello word')
         }
     })
+
+})
+app.post('/edit', urlencodedParser, (req, res) => {
+    let data = req.body
+    editJson(data)
+    res.json('编辑成功')
 
 })

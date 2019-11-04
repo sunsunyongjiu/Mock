@@ -12,6 +12,9 @@ export const api = {
     },
     test: function (paramObj: any) {
         return http.post('/testnew', paramObj)
-    }
+    },
+    edit: function (paramObj: any) {
+        return http.post('/edit', paramObj)
+    },
 
 }

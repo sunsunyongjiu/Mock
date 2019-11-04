@@ -20,22 +20,35 @@
         <el-menu-item index="3" disabled>暂未开放</el-menu-item>
       </el-menu>
     </header>
+
     <section class="mock_section">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column fixed prop="name" label="接口名称" width="150"></el-table-column>
         <el-table-column fixed prop="method" label="method" width="150"></el-table-column>
         <el-table-column prop="url" label="url"></el-table-column>
-        <el-table-column prop="des" label="描述" width="120"></el-table-column>
-        <el-table-column fixed="right" label="操作" width="100">
+        <el-table-column prop="des" label="描述" width="180"></el-table-column>
+        <el-table-column fixed="right" label="操作" width="150">
           <template slot-scope="scope">
-            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-            <el-button type="text" size="small">编辑</el-button>
+            <el-button @click="checkClick(scope.row)" type="text" size="small">查看</el-button>
+            <el-button type="text" size="small" @click="editClick(scope.row,scope.$index)">编辑</el-button>
+            <el-button
+              type="text"
+              size="small"
+              @click.native.prevent="deleteRow(scope.$index, tableData)"
+            >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </section>
-    <req-dialog :show="showDialog" @cancel="cancelClick" @submit="dialogSure"></req-dialog>
+    <footer class="mock_footer">
+      <el-button type="primary" class="subBtn" @click="upload">
+        同步
+        <i class="el-icon-upload el-icon--right"></i>
+      </el-button>
+    </footer>
+
+    <req-dialog :show="showDialog" @cancel="cancelClick" @submit="dialogSure" :editData="editData"></req-dialog>
   </div>
 </template>
 
@@ -50,13 +63,18 @@ export default {
     return {
       tableData: [],
       activeIndex: "1",
-      showDialog: false
+      showDialog: false,
+      editData: {},
+      editIndex: ""
     };
   },
   mounted() {
     this.getList();
   },
   methods: {
+    deleteRow(index, rows) {
+      rows.splice(index, 1);
+    },
     getList() {
       this.$api.getList().then(res => {
         this.tableData = res.data;
@@ -70,21 +88,42 @@ export default {
       this.showDialog = true;
     },
     cancelClick() {
-      console.log(1);
       this.showDialog = false;
     },
     dialogSure(data) {
-      this.$api.save(data).then(res => {
+      if (data.type) {
+        delete data["key"];
         this.showDialog = false;
-        if (res.code === 0) {
-          this.getList();
-        } else {
-          this.$message.error(res.message);
-        }
-      });
+        this.tableData[this.editIndex] = data;
+      } else {
+        this.$api.save(data).then(res => {
+          this.showDialog = false;
+          if (res.code === 0) {
+            this.getList();
+          } else {
+            this.$message.error(res.message);
+          }
+        });
+      }
     },
     test() {
       this.$api.test({ name: 1 }).then(res => {
+        console.log(res);
+      });
+    },
+    checkClick(data) {
+      data.type = "view";
+      this.editData = data;
+      this.showDialog = true;
+    },
+    editClick(data) {
+      console.log(data);
+      data.type = "edit";
+      this.editData = data;
+      this.showDialog = true;
+    },
+    upload() {
+      this.$api.edit(this.tableData).then(res => {
         console.log(res);
       });
     }
@@ -104,11 +143,14 @@ export default {
   background: #252d47;
   border-radius: 4px;
   margin: 20px 0;
+  position: relative;
 }
 .mock_section {
 }
-.sub_btn {
+.mock_footer {
+  margin-top: 10px;
+}
+.subBtn {
   float: right;
-  height: 100%;
 }
 </style>
