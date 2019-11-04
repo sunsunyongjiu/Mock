@@ -14,7 +14,7 @@
         <el-submenu index="2">
           <template slot="title">操作</template>
           <el-menu-item index="2-1" @click="addReq">新增接口</el-menu-item>
-          <el-menu-item index="2-2">删除接口</el-menu-item>
+          <!-- <el-menu-item index="2-2" @click="batchDelete">批量删除</el-menu-item> -->
           <el-menu-item index="2-3" @click="test">测试</el-menu-item>
         </el-submenu>
         <el-menu-item index="3" disabled>暂未开放</el-menu-item>

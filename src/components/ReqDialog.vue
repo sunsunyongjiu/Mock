@@ -14,7 +14,7 @@
           type="textarea"
           autosize
           placeholder="请输入返回数据"
-          v-model="form.code"
+          v-model="stringCode"
           v-if="form.type==='view'"
           disabled
         ></el-input>
@@ -80,7 +80,11 @@ export default {
       required: false
     }
   },
-  computed: {},
+  computed: {
+    stringCode: function() {
+      return JSON.stringify(this.form.code);
+    }
+  },
   watch: {
     show: {
       //深度监听，可监听到对象、数组的变化

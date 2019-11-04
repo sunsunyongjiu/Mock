@@ -121,7 +121,10 @@ app.post('/save', urlencodedParser, (req, res) => {
             })
         } else {
             writeJson(req.body)
-            res.json('hello word')
+            res.json({
+                code: 0,
+                message: '添加成功'
+            })
         }
     })
 
