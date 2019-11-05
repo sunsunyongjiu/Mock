@@ -9,7 +9,12 @@
   >
     <div class="dia_contain">
       <div class="left_contain">
-        <vue-json-editor v-model="form.code" :showBtns="false" v-if="form.type!=='view'"></vue-json-editor>
+        <vue-json-editor
+          v-model="form.code"
+          :showBtns="false"
+          v-if="form.type!=='view'"
+          :mode="'code'"
+        ></vue-json-editor>
         <el-input
           type="textarea"
           autosize
@@ -22,10 +27,14 @@
       <div class="right_contain">
         <el-form ref="form" :model="form" label-width="80px">
           <el-form-item label="接口名称">
-            <el-input v-model="form.name" :disabled="form.type==='view'"></el-input>
+            <el-input v-model="form.name" :disabled="form.type==='view'" placeholder="请填写接口名称"></el-input>
           </el-form-item>
           <el-form-item label="url">
-            <el-input v-model="form.url" :disabled="form.type==='view'"></el-input>
+            <el-input
+              v-model="form.url"
+              placeholder="请填写接口地址（会默认加入模块地址）"
+              :disabled="form.type==='view'"
+            ></el-input>
           </el-form-item>
           <el-form-item label="Method">
             <el-select v-model="form.method" placeholder="请选择Method" :disabled="form.type==='view'">
@@ -106,6 +115,13 @@ export default {
       console.log(this.editData);
       if (this.editData.type) {
         this.form = this.editData;
+      } else {
+        this.form = {
+          code: {
+            code: 0,
+            data: []
+          }
+        };
       }
     }
   }

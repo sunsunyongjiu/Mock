@@ -3,14 +3,15 @@ const express = require('express');
 const app = express();
 // 操作json文件
 var fs = require('fs');
+var join = require('path').join;
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({
     extended: false
 });
 //将保存的数据书写到json文件中
-function writeJson(params) {
+function writeJson(path, params) {
     //现将json文件读出来
-    fs.readFile('./build/data.json', function (err, data) {
+    fs.readFile(path, function (err, data) {
         if (err) {
             return console.error(err);
         }
@@ -20,7 +21,7 @@ function writeJson(params) {
         // person.total = person.data.length; //定义一下总条数，为以后的分页打基础
         // console.log(person.data);
         var str = JSON.stringify(person); //因为nodejs的写入文件只认识字符串或者二进制数，所以把json对象转换成字符串重新写入json文件中
-        fs.writeFile('./build/data.json', str, function (err) {
+        fs.writeFile(path, str, function (err) {
             if (err) {
                 console.error(err);
             }
@@ -29,10 +30,10 @@ function writeJson(params) {
         })
     })
 }
-//将保存的数据书写到json文件中
-function editJson(params) {
+//覆写json文件
+function rewriteJson(path, params) {
     //现将json文件读出来
-    fs.readFile('./build/data.json', function (err, data) {
+    fs.readFile(path, function (err, data) {
         if (err) {
             return console.error(err);
         }
@@ -42,20 +43,20 @@ function editJson(params) {
         // person.total = person.data.length; //定义一下总条数，为以后的分页打基础
         // console.log(person.data);
         var str = JSON.stringify(person); //因为nodejs的写入文件只认识字符串或者二进制数，所以把json对象转换成字符串重新写入json文件中
-        fs.writeFile('./build/data.json', str, function (err) {
+        fs.writeFile(path, str, function (err) {
             if (err) {
                 console.error(err);
             }
             init()
-            console.log('----------编辑成功-------------');
+            console.log('----------新增成功-------------');
         })
     })
 }
 //读取已有的json
-function getJson(params) {
+function getJson(path = './build/json/data.json') {
     //现将json文件读出来
     return new Promise((resolve, reject) => {
-        fs.readFile('./build/data.json', function (err, data) {
+        fs.readFile(path, function (err, data) {
             if (err) {
                 reject(err)
                 return console.error(err);
@@ -67,24 +68,44 @@ function getJson(params) {
     })
 
 }
+//添加json文件
+function addJson(path, str) {
+    //现将json文件读出来
+    return new Promise((resolve, reject) => {
+        fs.writeFile(path, str, function (err) {
+            if (err) {
+                console.error(err);
+                reject(err)
+            }
+            resolve()
+            console.log('----------新增成功-------------');
+        })
+    })
+
+}
 
 function init() {
-    getJson().then(res => {
-        let datas = res.data;
-        datas.forEach(item => {
-            if (item.method === 'POST') {
-                app.post(item.url, urlencodedParser, (req, res) => {
-                    res.json(item.code)
-                })
-            } else {
-                app.get(item.url, (req, res) => {
-                    res.json(item.code)
-                })
-            }
+    let files = fs.readdirSync('./build/json');
+    files.forEach(function (item, index) {
+        let path = `./build/json/${item}`;
+        getJson(path).then(res => {
+            let datas = res.data;
+            datas.forEach(item => {
+                if (item.method === 'POST') {
+                    app.post(item.url, urlencodedParser, (req, res) => {
+                        res.json(item.code)
+                    })
+                } else {
+                    app.get(item.url, (req, res) => {
+                        res.json(item.code)
+                    })
+                }
+            })
+        }).catch(rs => {
+            console.log(rs)
         })
-    }).catch(rs => {
-        console.log(rs)
-    })
+    });
+
 }
 init()
 app.use(bodyParser.json())
@@ -101,8 +122,13 @@ app.all('*', function (req, res, next) {
     next()
 });
 app.get('/getList', (req, res) => {
-    getJson().then(list => {
+    let path = `./build/json/${req.query.model}.json`;
+    getJson(path).then(list => {
         res.json(list)
+    }).catch(err => {
+        res.json({
+            data: []
+        })
     })
 
 })
@@ -112,15 +138,18 @@ app.get('/api/', function (req, res) {
 
 });
 app.post('/save', urlencodedParser, (req, res) => {
-    let data = req.body
-    getJson().then(list => {
+    let data = req.body.data
+    let model = req.body.model
+    let path = `./build/json/${model}.json`
+    getJson(path).then(list => {
         if (list.data.filter(item => item.url === data.url).length > 0) {
             res.json({
                 code: 1,
                 message: '该接口已存在'
             })
         } else {
-            writeJson(req.body)
+            data.url = model === 'basic' ? data.url : `/${model}${data.url}`
+            writeJson(path, data)
             res.json({
                 code: 0,
                 message: '添加成功'
@@ -130,8 +159,29 @@ app.post('/save', urlencodedParser, (req, res) => {
 
 })
 app.post('/edit', urlencodedParser, (req, res) => {
-    let data = req.body
-    editJson(data)
+    let data = req.body.data
+    let model = req.body.model
+    let path = `./build/json/${model}.json`
+    rewriteJson(path, data)
     res.json('编辑成功')
 
 })
+//同步模块接口
+app.post('/addModel', urlencodedParser, (req, res) => {
+    let data = req.body
+    data.forEach(item => {
+        if (item.type === 'add') {
+            item.type = 'view'
+            let path = `./build/json/${item.path.slice(1, item.path.length)}.json`
+            addJson(path, '{"data":[]}')
+        }
+    })
+    rewriteJson('./build/models.json', data)
+    res.json('编辑成功')
+})
+//获取模块接口
+app.get('/getModels', function (req, res) {
+    getJson('./build/models.json').then(list => {
+        res.json(list)
+    })
+});

@@ -16,5 +16,11 @@ export const api = {
     edit: function (paramObj: any) {
         return http.post('/edit', paramObj)
     },
+    addModel: function (paramObj: any) {
+        return http.post('/addModel', paramObj)
+    },
+    getModel: function (paramObj: any) {
+        return http.get('/getModels', paramObj)
+    },
 
 }

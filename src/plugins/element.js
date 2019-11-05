@@ -12,7 +12,8 @@ import {
     FormItem,
     Select,
     Option,
-    Message
+    Message,
+    Avatar
 } from 'element-ui'
 Vue.prototype.$message = Message
 Vue.use(Button)
@@ -27,3 +28,4 @@ Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Select)
 Vue.use(Option)
+Vue.use(Avatar)
